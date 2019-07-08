@@ -113,7 +113,7 @@ tensorboard = TensorBoard(log_dir="logs/{}".format(time.time()))
 
 model.fit(X, y,
           batch_size=2,
-          epochs=1,
+          epochs=100,
           validation_split=0.3,       
           callbacks=[tensorboard, checkpoint])
 
