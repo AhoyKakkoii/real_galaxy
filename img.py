@@ -81,3 +81,9 @@ for f in os.listdir(path):
 	else:
 		extract(arr, f)
 
+os.makedirs('model/21')
+os.makedirs('model/24')
+os.makedirs('result/input')
+os.makedirs('result/output')
+os.makedirs('weights')
+os.makedirs('logs')
