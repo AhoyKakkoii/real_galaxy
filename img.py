@@ -16,13 +16,13 @@ def extract(array, folder, part=None):
 	for i in range(len(array)):
 		n = i+1
 		f = train
-		plt.imshow(array[i], cmap='gray')
+		#plt.imshow(array[i], cmap='gray')
 
 		if i > 8000:
 			n = i-8000
 			f = valid
 		nzero = 4-math.floor(math.log(n, 10))
-		nzero = nzero-1 if n==1000 else nzeron
+		nzero = nzero-1 if n==1000 else nzero
 		img_name = t + '_' + f.split('_')[1][0]+'_'+'0'*nzero+str(n)
 		img_name = img_name + '_' + str(part) if part else img_name
 		
