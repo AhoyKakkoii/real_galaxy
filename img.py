@@ -6,7 +6,7 @@ import matplotlib
 import math
 
 
-path =  'C:/Users/Yu/Desktop/bnl2019summer/project/galaxy/galaxy_zoo'
+path =  None #'C:/Users/Yu/Desktop/bnl2019summer/project/galaxy/galaxy_zoo'
 out_path = 'galaxy_zoo/'
 
 def extract(array, folder, part=None):
