@@ -2,7 +2,7 @@ import os
 import imageio
 import numpy as np
 from ISR.utils.logger import get_logger
-
+from PIL import Image
 
 class DataHandler:
     """
@@ -26,7 +26,9 @@ class DataHandler:
         self.scale = scale
         self.patch_size = {'lr': patch_size, 'hr': patch_size * self.scale}
         self.logger = get_logger(__name__)
+        print("make img list start")
         self._make_img_list()
+        print("make img list finished")
         self._check_dataset()
 
     def _make_img_list(self):
@@ -35,9 +37,18 @@ class DataHandler:
         for res in ['hr', 'lr']:
             file_names = os.listdir(self.folders[res])
             file_names = [file for file in file_names if file.endswith(self.extensions)]
-            self.img_list[res] = np.sort(file_names)
+            
 
+            # @shenghuiyu
+            if res == 'hr':
+                file_names=self._choose_from_sum(file_names, self.folders[res])
+
+            self.img_list[res] = np.sort(file_names)
+        print('file_names', self.img_list)
+        print('\n-------------------------------------------------\n')
+            
         if self.n_validation_samples:
+            print(self.img_list)
             samples = np.random.choice(
                 range(len(self.img_list['hr'])), self.n_validation_samples, replace=False
             )
@@ -53,11 +64,13 @@ class DataHandler:
 
     def _matching_datasets(self):
         """ Rough file name matching between lr and hr directories. """
-        # LR_name.png = HR_name+x+scale.png
+        # LR_name.png = HR_name_2.png
         # or
-        # LR_name.png = HR_name.png
-        LR_name_root = [x.split('.')[0].split('x')[0] for x in self.img_list['lr']]
-        HR_name_root = [x.split('.')[0] for x in self.img_list['hr']]
+        # LR_name.png = HR_name_1.png
+        print('lr',self.img_list['lr'])
+        LR_name_root = [x.split('.')[0].split('_')[1:3] for x in self.img_list['lr']]
+        HR_name_root = [x.split('.')[0].split('_')[1:3] for x in self.img_list['hr']]
+        
         return np.all(HR_name_root == LR_name_root)
 
     def _not_flat(self, patch, flatness):
@@ -217,3 +230,53 @@ class DataHandler:
             raise ValueError(
                 'No validation set size specified. (not operating in a validation set?)'
             )
+
+    # @shenghuiyu
+    def _choose_from_sum(self, file_names, file_dir):
+        list1 = []
+        list2 = []
+        output = []
+
+        for f in file_names:
+            if f[-5]=='1':
+                list1.append(f)
+            elif f[-5]=='2':
+                list2.append(f)
+
+
+        assert len(list1)==len(list2)
+
+
+        for i in range(len(list1)):
+            assert list1[i][:-5]==list2[i][:-5]
+
+            img1=Image.open(file_dir+list1[i])
+            img2=Image.open(file_dir+list2[i])
+            # array = np.array(img)
+            # print(len(array))
+
+            sum1=0
+            sum2=0
+            for w in range(img1.size[0]):
+                for h in range(img1.size[1]):
+                    sum1+=sum(img1.getpixel((w,h)))
+                    sum2+=sum(img2.getpixel((w,h)))
+
+            if sum1 > sum2:
+                output.append(list1[i])
+                print(list1[i])
+#                 if self.n_validation_samples:
+#                     img1.save("galaxy_zoo/individuals_2blend_valid_/"+list1[i],'png')
+#                 else:
+#                     img1.save("galaxy_zoo/individuals_2blend_train_/"+list1[i],'png')
+            else:
+                output.append(list2[i])
+                print(list2[i])
+#                 if self.n_validation_samples:
+#                     img2.save("galaxy_zoo/individuals_2blend_valid_/"+list2[i],'png')
+#                 else:
+#                     img2.save("galaxy_zoo/individuals_2blend_train_/"+list2[i],'png')
+
+#             print("getting image summation:"+str(i)+"/"+str(len(list1)))
+
+        return output

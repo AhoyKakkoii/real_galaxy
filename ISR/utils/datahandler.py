@@ -44,7 +44,9 @@ class DataHandler:
                 file_names=self._choose_from_sum(file_names, self.folders[res])
 
             self.img_list[res] = np.sort(file_names)
-
+        print('file_names', self.img_list)
+        print('\n-------------------------------------------------\n')
+            
         if self.n_validation_samples:
             print(self.img_list)
             samples = np.random.choice(
@@ -65,6 +67,7 @@ class DataHandler:
         # LR_name.png = HR_name_2.png
         # or
         # LR_name.png = HR_name_1.png
+        print('lr',self.img_list['lr'])
         LR_name_root = [x.split('.')[0].split('_')[1:3] for x in self.img_list['lr']]
         HR_name_root = [x.split('.')[0].split('_')[1:3] for x in self.img_list['hr']]
         
@@ -159,10 +162,10 @@ class DataHandler:
     def _transform_batch(self, batch, transforms):
         """ Transforms each individual image of the batch independently. """
 
-        t_batch = np.array(
-            [self._apply_transform(img, transforms[i]) for i, img in enumerate(batch)]
-        )
-        return t_batch
+       
+            
+        
+        return self._apply_transform(batch, transforms)
 
     def get_batch(self, batch_size, idx=None, flatness=0.0):
         """
@@ -174,20 +177,30 @@ class DataHandler:
             flatness: float in [0,1], is the patch "flatness" threshold.
                 Determines what level of detail the patches need to meet. 0 means any patch is accepted.
         """
+        result_batch = {'lr':[], 'hr':[]}
+        batch = {'lr':[], 'hr':[]}
+        for i in range(batch_size):
+            if not idx:
+                # randomly select one image. idx is given at validation time.
+                idx = np.random.choice(range(len(self.img_list['hr'])))
 
-        if not idx:
-            # randomly select one image. idx is given at validation time.
-            idx = np.random.choice(range(len(self.img_list['hr'])))
-        img = {}
-        for res in ['lr', 'hr']:
-            img_path = os.path.join(self.folders[res], self.img_list[res][idx])
-            img[res] = imageio.imread(img_path) / 255.0
-        batch = self._crop_imgs(img, batch_size, flatness)
-        transforms = np.random.randint(0, 3, (batch_size, 2))
-        batch['lr'] = self._transform_batch(batch['lr'], transforms)
-        batch['hr'] = self._transform_batch(batch['hr'], transforms)
+            img = {}
+            for res in ['lr', 'hr']:
+                img_path = os.path.join(self.folders[res], self.img_list[res][idx])
+                print('\nget batch path:', img_path)
+                img[res] = imageio.imread(img_path) / 255.0
+            # batch = self._crop_imgs(img, batch_size, flatness)
+            transforms = np.random.randint(0, 3, 2)
+            batch['lr'] = self._transform_batch(img['lr'], transforms)
+            batch['hr'] = self._transform_batch(img['hr'], transforms)
+            result_batch['lr'].append(batch['lr'])
+            result_batch['hr'].append(batch['hr'])
+            idx=None
 
-        return batch
+        result_batch['lr'] = np.array(result_batch['lr'])
+        result_batch['hr'] = np.array(result_batch['hr'])
+        print('shape,', result_batch['lr'].shape)
+        return result_batch
 
     def get_validation_batches(self, batch_size):
         """ Returns a batch for each image in the validation set. """
@@ -261,10 +274,19 @@ class DataHandler:
 
             if sum1 > sum2:
                 output.append(list1[i])
-
+                print(list1[i])
+#                 if self.n_validation_samples:
+#                     img1.save("galaxy_zoo/individuals_2blend_valid_/"+list1[i],'png')
+#                 else:
+#                     img1.save("galaxy_zoo/individuals_2blend_train_/"+list1[i],'png')
             else:
                 output.append(list2[i])
+                print(list2[i])
+#                 if self.n_validation_samples:
+#                     img2.save("galaxy_zoo/individuals_2blend_valid_/"+list2[i],'png')
+#                 else:
+#                     img2.save("galaxy_zoo/individuals_2blend_train_/"+list2[i],'png')
 
-            print("getting image summation:"+str(i)+"/"+str(len(list1)))
+#             print("getting image summation:"+str(i)+"/"+str(len(list1)))
 
         return output

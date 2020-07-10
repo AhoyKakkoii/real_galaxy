@@ -2,11 +2,11 @@ import yaml
 import numpy as np
 from time import time
 from tqdm import tqdm
-from keras.models import Model
-from keras.layers import Input
-from keras.optimizers import Adam
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import TensorBoard
-from keras import backend as K
+from tensorflow.keras import backend as K
 from ISR.utils.datahandler import DataHandler
 from ISR.utils.train_helper import TrainerHelper
 from ISR.utils.metrics import PSNR
@@ -96,6 +96,7 @@ class Trainer:
         self.losses = losses
         self.log_dirs = log_dirs
         self.metrics = metrics
+        print('metrics',self.metrics)
         if self.metrics['generator'] == 'PSNR_Y':
             self.metrics['generator'] = PSNR_Y
         elif self.metrics['generator'] == 'PSNR':
@@ -329,10 +330,7 @@ class Trainer:
                 if self.discriminator:
                     ##try:
                         sr = self.generator.model.predict(batch['lr'])
-                        print()
-                        print("train on batch fake before", len(sr))
                         sr = np.concatenate((sr, batch['lr']), axis=0)
-                        print("train on batch fake after ", len(sr))
 
                         # @shenghuiyu
                         d_loss_real = self.discriminator.model.train_on_batch(batch['hr'], valid)

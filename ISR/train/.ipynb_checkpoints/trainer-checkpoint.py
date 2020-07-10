@@ -2,11 +2,11 @@ import yaml
 import numpy as np
 from time import time
 from tqdm import tqdm
-from keras.models import Model
-from keras.layers import Input
-from keras.optimizers import Adam
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import TensorBoard
-from keras import backend as K
+from tensorflow.keras import backend as K
 from ISR.utils.datahandler import DataHandler
 from ISR.utils.train_helper import TrainerHelper
 from ISR.utils.metrics import PSNR
@@ -96,6 +96,7 @@ class Trainer:
         self.losses = losses
         self.log_dirs = log_dirs
         self.metrics = metrics
+        print('metrics',self.metrics)
         if self.metrics['generator'] == 'PSNR_Y':
             self.metrics['generator'] = PSNR_Y
         elif self.metrics['generator'] == 'PSNR':
@@ -285,6 +286,7 @@ class Trainer:
                 saving logic. The values are the mode that trigger the weights saving ('min' vs 'max').
         """
 
+
         self.settings['training_parameters']['steps_per_epoch'] = steps_per_epoch
         self.settings['training_parameters']['batch_size'] = batch_size
         print(self.helper.session_id)
@@ -301,10 +303,11 @@ class Trainer:
         if self.discriminator:
             discr_out_shape = list(self.discriminator.model.outputs[0].shape)[1:4]
             valid = np.ones([batch_size] + discr_out_shape)
-            fake = np.zeros([batch_size] + discr_out_shape)
+            fake = np.zeros([batch_size*2] + discr_out_shape)
             validation_valid = np.ones([len(validation_set['hr'])] + discr_out_shape)
             y_validation.append(validation_valid)
         if self.feature_extractor:
+            # validation_set['hr'].reshape(160,80,80,3)
             validation_feats = self.feature_extractor.model.predict(validation_set['hr'])
             y_validation.extend([*validation_feats])
 
@@ -325,13 +328,14 @@ class Trainer:
 
                 ## Discriminator training
                 if self.discriminator:
-                    try:
+                    ##try:
                         sr = self.generator.model.predict(batch['lr'])
+                        print()
+                        print("train on batch fake before", len(sr))
+                        sr = np.concatenate((sr, batch['lr']), axis=0)
+                        print("train on batch fake after ", len(sr))
 
-                        ##next line added by Shenghui because of not warning by tensorflow and not saving trained model
-                        # self.discriminator.model.compile(optimizer='rmsprop', loss='mse')
-
-
+                        # @shenghuiyu
                         d_loss_real = self.discriminator.model.train_on_batch(batch['hr'], valid)
                         d_loss_fake = self.discriminator.model.train_on_batch(sr, fake)
                         d_loss_fake = self._format_losses(
@@ -343,8 +347,8 @@ class Trainer:
                         training_losses.update(d_loss_real)
                         training_losses.update(d_loss_fake)
                         y_train.append(valid)
-                    except:
-                        pass
+                    ##except:
+                    #    pass
 
                 ## Generator training
                 if self.feature_extractor:
