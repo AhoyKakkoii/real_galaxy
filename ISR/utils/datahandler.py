@@ -258,6 +258,7 @@ class DataHandler:
 
 
         for i in range(len(list1)):
+            print(list1[i][:-5], list2[i][:-5])
             assert list1[i][:-5]==list2[i][:-5]
 
             img1=Image.open(file_dir+list1[i])
