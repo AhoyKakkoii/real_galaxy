@@ -161,11 +161,11 @@ class DataHandler:
 
     def _transform_batch(self, batch, transforms):
         """ Transforms each individual image of the batch independently. """
-
-       
-            
         
-        return self._apply_transform(batch, transforms)
+        t_batch = np.array(
+            [self._apply_transform(img, transforms[i]) for i, img in enumerate(batch)]
+        )
+        return t_batch
 
     def get_batch(self, batch_size, idx=None, flatness=0.0):
         """
@@ -180,9 +180,8 @@ class DataHandler:
         result_batch = {'lr':[], 'hr':[]}
         batch = {'lr':[], 'hr':[]}
         for i in range(batch_size):
-            if not idx:
-                # randomly select one image. idx is given at validation time.
-                idx = np.random.choice(range(len(self.img_list['hr'])))
+            # randomly select one image. idx is given at validation time.
+            idx = np.random.choice(range(len(self.img_list['hr'])))
 
             img = {}
             for res in ['lr', 'hr']:
@@ -190,15 +189,14 @@ class DataHandler:
                 print('\nget batch path:', img_path)
                 img[res] = imageio.imread(img_path) / 255.0
             # batch = self._crop_imgs(img, batch_size, flatness)
-            transforms = np.random.randint(0, 3, 2)
-            batch['lr'] = self._transform_batch(img['lr'], transforms)
-            batch['hr'] = self._transform_batch(img['hr'], transforms)
-            result_batch['lr'].append(batch['lr'])
-            result_batch['hr'].append(batch['hr'])
-            idx=None
-
-        result_batch['lr'] = np.array(result_batch['lr'])
-        result_batch['hr'] = np.array(result_batch['hr'])
+            
+            batch['lr'].append(img['lr'])
+            batch['hr'].append(img['hr'])
+            
+        transforms = np.random.randint(0, 3, (batch_size, 2))
+        result_batch['lr'] = self._transform_batch(np.array(batch['lr']), transforms)
+        result_batch['hr'] = self._transform_batch(np.array(batch['hr']), transforms)
+            
         print('shape,', result_batch['lr'].shape)
         return result_batch
 
