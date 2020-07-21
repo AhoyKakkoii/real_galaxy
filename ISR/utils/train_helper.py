@@ -1,313 +1,268 @@
-import yaml
+import os
+import imageio
 import numpy as np
-from pathlib import Path
 from ISR.utils.logger import get_logger
-from ISR.utils.utils import get_timestamp
+from PIL import Image
 
-
-class TrainerHelper:
-    """Collection of useful functions to manage training sessions.
-
+class DataHandler:
+    """
+    DataHandler generate augmented batches used for training or validation.
     Args:
-        generator: Keras model, the super-scaling, or generator, network.
-        logs_dir: path to the directory where the tensorboard logs are saved.
-        weights_dir: path to the directory where the weights are saved.
-        lr_train_dir: path to the directory containing the Low-Res images.
-        feature_extractor: Keras model, feature extractor network for the deep features
-            component of perceptual loss function.
-        discriminator: Keras model, the discriminator network for the adversarial
-            component of the perceptual loss.
-        dataname: string, used to identify what dataset is used for the training session.
-        weights_dictionarycontains the paths, if any to the
-            pre-trained generator's and to the pre-trained discriminator's weights,
-            for transfer learning.
-        fallback_save_every_n_epochs: integer, determines after how many epochs that did not trigger
-            weights saving the weights are despite no metric improvement.
-        max_n_best_weights: maximum amount of weights that are best on some metric that are kept.
-        max_n_other_weights: maximum amount of non-best weights that are kept.
-
-
-    Methods:
-        print_training_setting: see docstring.
-        on_epoch_end: see docstring.
-        epoch_n_from_weights_name: see docstring.
-        initialize_training: see docstring.
-
+        lr_dir: directory containing the Low Res images.
+        hr_dir: directory containing the High Res images.
+        patch_size: integer, size of the patches extracted from LR images.
+        scale: integer, upscaling factor.
+        n_validation_samples: integer, size of the validation set. Only provided if the
+            DataHandler is used to generate validation sets.
     """
 
-    def __init__(
-        self,
-        generator,
-        weights_dir,
-        logs_dir,
-        lr_train_dir,
-        feature_extractor=None,
-        discriminator=None,
-        dataname=None,
-        weights_generator=None,
-        weights_discriminator=None,
-        fallback_save_every_n_epochs=2,
-        max_n_other_weights=5,
-        max_n_best_weights=5,
-    ):
-        self.generator = generator
-        self.dirs = {'logs': Path(logs_dir), 'weights': Path(weights_dir)}
-        self.feature_extractor = feature_extractor
-        self.discriminator = discriminator
-        self.dataname = dataname
-
-        if weights_generator:
-            self.pretrained_generator_weights = Path(weights_generator)
-        else:
-            self.pretrained_generator_weights = None
-
-        if weights_discriminator:
-            self.pretrained_discriminator_weights = Path(weights_discriminator)
-        else:
-            self.pretrained_discriminator_weights = None
-
-        self.fallback_save_every_n_epochs = fallback_save_every_n_epochs
-        self.lr_dir = Path(lr_train_dir)
-        self.basename = self._make_basename()
-        self.session_id = self.get_session_id(basename=None)
-        self.session_config_name = 'session_config.yml'
-        self.callback_paths = self._make_callback_paths()
-        self.weights_name = self._weights_name(self.callback_paths)
-        self.best_metrics = {}
-        self.since_last_epoch = 0
-        self.max_n_other_weights = max_n_other_weights
-        self.max_n_best_weights = max_n_best_weights
+    def __init__(self, lr_dir, hr_dir, patch_size, scale, n_validation_samples=None):
+        self.folders = {'hr': hr_dir, 'lr': lr_dir}  # image folders
+        self.extensions = ('.png', '.jpeg', '.jpg')  # admissible extension
+        self.img_list = {}  # list of file names
+        self.n_validation_samples = n_validation_samples
+        self.patch_size = patch_size
+        self.scale = scale
+        self.patch_size = {'lr': patch_size, 'hr': patch_size * self.scale}
         self.logger = get_logger(__name__)
+        print("make img list start")
+        self._make_img_list()
+        print("make img list finished")
+        self._check_dataset()
 
-    def _make_basename(self):
-        """ Combines generators's name and its architecture's parameters. """
+    def _make_img_list(self):
+        """ Creates a dictionary of lists of the acceptable images contained in lr_dir and hr_dir. """
 
-        gen_name = self.generator.name
-        params = [gen_name]
-        for param in np.sort(list(self.generator.params.keys())):
-            params.append('{g}{p}'.format(g=param, p=self.generator.params[param]))
-        return '-'.join(params)
+        for res in ['hr', 'lr']:
+            file_names = os.listdir(self.folders[res])
+            file_names = [file for file in file_names if file.endswith(self.extensions)]
+            
 
-    def get_session_id(self, basename):
-        """ Returns unique session identifier. """
+            # @shenghuiyu
+            if res == 'hr':
+                file_names=self._choose_from_sum(file_names, self.folders[res])
 
-        time_stamp = get_timestamp()
+            self.img_list[res] = np.sort(file_names)
 
-        if basename:
-            session_id = '{b}_{ts}'.format(b=basename, ts=time_stamp)
-        else:
-            session_id = time_stamp
-        return session_id
-
-    def _get_previous_conf(self):
-        """ Checks if a session_config.yml is available in the pretrained weights folder. """
-
-        if self.pretrained_generator_weights:
-            session_config_path = (
-                self.pretrained_generator_weights.parent / self.session_config_name
+        if self.n_validation_samples:
+            print(self.img_list)
+            samples = np.random.choice(
+                range(len(self.img_list['hr'])), self.n_validation_samples, replace=False
             )
-            if session_config_path.exists():
-                return yaml.load(session_config_path.read_text(), Loader=yaml.FullLoader)
+            for res in ['hr', 'lr']:
+                self.img_list[res] = self.img_list[res][samples]
+
+    def _check_dataset(self):
+        """ Sanity check for dataset. """
+
+        # the order of these asserts is important for testing
+        assert len(self.img_list['hr']) == self.img_list['hr'].shape[0], 'UnevenDatasets'
+        assert self._matching_datasets(), 'Input/LabelsMismatch'
+
+    def _matching_datasets(self):
+        """ Rough file name matching between lr and hr directories. """
+        # LR_name.png = HR_name_2.png
+        # or
+        # LR_name.png = HR_name_1.png
+        LR_name_root = [x.split('.')[0].split('_')[1:3] for x in self.img_list['lr']]
+        HR_name_root = [x.split('.')[0].split('_')[1:3] for x in self.img_list['hr']]
+        
+        return np.all(HR_name_root == LR_name_root)
+
+    def _not_flat(self, patch, flatness):
+        """
+        Determines whether the patch is complex, or not-flat enough.
+        Threshold set by flatness.
+        """
+
+        if max(np.std(patch, axis=0).mean(), np.std(patch, axis=1).mean()) < flatness:
+            return False
+        else:
+            return True
+
+    def _crop_imgs(self, imgs, batch_size, flatness):
+        """
+        Get random top left corners coordinates in LR space, multiply by scale to
+        get HR coordinates.
+        Gets batch_size + n possible coordinates.
+        Accepts the batch only if the standard deviation of pixel intensities is above a given threshold, OR
+        no patches can be further discarded (n have been discarded already).
+        Square crops of size patch_size are taken from the selected
+        top left corners.
+        """
+
+        slices = {}
+        crops = {}
+        crops['lr'] = []
+        crops['hr'] = []
+        accepted_slices = {}
+        accepted_slices['lr'] = []
+        top_left = {'x': {}, 'y': {}}
+        n = 50 * batch_size
+        for i, axis in enumerate(['x', 'y']):
+            top_left[axis]['lr'] = np.random.randint(
+                0, imgs['lr'].shape[i] - self.patch_size['lr'] + 1, batch_size + n
+            )
+            top_left[axis]['hr'] = top_left[axis]['lr'] * self.scale
+        for res in ['lr', 'hr']:
+            slices[res] = np.array(
+                [
+                    {'x': (x, x + self.patch_size[res]), 'y': (y, y + self.patch_size[res])}
+                    for x, y in zip(top_left['x'][res], top_left['y'][res])
+                ]
+            )
+
+        for slice_index, s in enumerate(slices['lr']):
+            candidate_crop = imgs['lr'][s['x'][0] : s['x'][1], s['y'][0] : s['y'][1], slice(None)]
+            if self._not_flat(candidate_crop, flatness) or n == 0:
+                crops['lr'].append(candidate_crop)
+                accepted_slices['lr'].append(slice_index)
             else:
-                self.logger.warning('Could not find previous configuration')
-                return {}
+                n -= 1
+            if len(crops['lr']) == batch_size:
+                break
 
-        return {}
+        accepted_slices['hr'] = slices['hr'][accepted_slices['lr']]
 
-    def update_config(self, training_settings):
-        """
-        Adds to the existing settings (if any) the current settings dictionary
-        under the session_id key.
-        """
+        for s in accepted_slices['hr']:
+            candidate_crop = imgs['hr'][s['x'][0] : s['x'][1], s['y'][0] : s['y'][1], slice(None)]
+            crops['hr'].append(candidate_crop)
 
-        session_settings = self._get_previous_conf()
-        session_settings.update({self.session_id: training_settings})
+        crops['lr'] = np.array(crops['lr'])
+        crops['hr'] = np.array(crops['hr'])
+        return crops
 
-        return session_settings
+    def _apply_transform(self, img, transform_selection):
+        """ Rotates and flips input image according to transform_selection. """
 
-    def _make_callback_paths(self):
-        """ Creates the paths used for managing logs and weights storage. """
-
-        callback_paths = {}
-        callback_paths['weights'] = self.dirs['weights'] / self.basename / self.session_id
-        callback_paths['logs'] = self.dirs['logs'] / self.basename / self.session_id
-        return callback_paths
-
-    def _weights_name(self, callback_paths):
-        """ Builds the string used to name the weights of the training session. """
-
-        w_name = {
-            'generator': callback_paths['weights']
-            / (self.basename + '{metric}_epoch{epoch:03d}.hdf5')
+        rotate = {
+            0: lambda x: x,
+            1: lambda x: np.rot90(x, k=1, axes=(1, 0)),  # rotate right
+            2: lambda x: np.rot90(x, k=1, axes=(0, 1)),  # rotate left
         }
-        if self.discriminator:
-            w_name.update(
-                {
-                    'discriminator': callback_paths['weights']
-                    / (self.discriminator.name + '{metric}_epoch{epoch:03d}.hdf5')
-                }
-            )
-        return w_name
 
-    def print_training_setting(self, settings):
-        """ Does what it says. """
+        flip = {
+            0: lambda x: x,
+            1: lambda x: np.flip(x, 0),  # flip along horizontal axis
+            2: lambda x: np.flip(x, 1),  # flip along vertical axis
+        }
 
-        self.logger.info('\nTraining details:')
-        for k in settings[self.session_id]:
-            if isinstance(settings[self.session_id][k], dict):
-                self.logger.info('  {}: '.format(k))
-                for kk in settings[self.session_id][k]:
-                    self.logger.info(
-                        '    {key}: {value}'.format(
-                            key=kk, value=str(settings[self.session_id][k][kk])
-                        )
-                    )
-            else:
-                self.logger.info(
-                    '  {key}: {value}'.format(key=k, value=str(settings[self.session_id][k]))
-                )
+        rot_direction = transform_selection[0]
+        flip_axis = transform_selection[1]
 
-    def _save_weights(self, epoch, generator, discriminator=None, metric=None, best=False):
-        """ Saves the weights of the non-None models. """
+        img = rotate[rot_direction](img)
+        img = flip[flip_axis](img)
 
-        if best:
-            gen_path = self.weights_name['generator'].with_name(
-                (self.weights_name['generator'].name).format(
-                    metric='_best-' + metric, epoch=epoch + 1
-                )
-            )
+        return img
+
+    def _transform_batch(self, batch, transforms):
+        """ Transforms each individual image of the batch independently. """
+
+        t_batch = np.array(
+            [self._apply_transform(img, transforms[i]) for i, img in enumerate(batch)]
+        )
+        return t_batch
+
+    def get_batch(self, batch_size, idx=None, flatness=0.0):
+        """
+        Returns a dictionary with keys ('lr', 'hr') containing training batches
+        of Low Res and High Res image patches.
+        Args:
+            batch_size: integer.
+            flatness: float in [0,1], is the patch "flatness" threshold.
+                Determines what level of detail the patches need to meet. 0 means any patch is accepted.
+        """
+
+        if not idx:
+            # randomly select one image. idx is given at validation time.
+            idx = np.random.choice(range(len(self.img_list['hr'])))
+        img = {}
+        for res in ['lr', 'hr']:
+            img_path = os.path.join(self.folders[res], self.img_list[res][idx])
+            img[res] = imageio.imread(img_path) / 255.0
+        batch = self._crop_imgs(img, batch_size, flatness)
+        transforms = np.random.randint(0, 3, (batch_size, 2))
+        batch['lr'] = self._transform_batch(batch['lr'], transforms)
+        batch['hr'] = self._transform_batch(batch['hr'], transforms)
+
+        return batch
+
+    def get_validation_batches(self, batch_size):
+        """ Returns a batch for each image in the validation set. """
+
+        if self.n_validation_samples:
+            batches = []
+            for idx in range(self.n_validation_samples):
+                batches.append(self.get_batch(batch_size, idx, flatness=0.0))
+            return batches
         else:
-            gen_path = self.weights_name['generator'].with_name(
-                (self.weights_name['generator'].name).format(metric='', epoch=epoch + 1)
+            self.logger.error(
+                'No validation set size specified. (not operating in a validation set?)'
             )
-        # CANT SAVE MODEL DUE TO TF LAYER INSIDE LAMBDA (PIXELSHUFFLE)
-        generator.save_weights(str(gen_path))
-        if discriminator:
-            if best:
-                discr_path = self.weights_name['discriminator'].with_name(
-                    (self.weights_name['discriminator'].name).format(
-                        metric='_best-' + metric, epoch=epoch + 1
-                    )
-                )
-            else:
-                discr_path = self.weights_name['discriminator'].with_name(
-                    (self.weights_name['discriminator'].name).format(metric='', epoch=epoch + 1)
-                )
-            discriminator.model.save_weights(str(discr_path))
-        try:
-            self._remove_old_weights(self.max_n_other_weights, max_best=self.max_n_best_weights)
-        except Exception as e:
-            self.logger.warning('Could not remove weights: {}'.format(e))
-
-    def _remove_old_weights(self, max_n_weights, max_best=5):
-        """
-        Scans the weights folder and removes all but:
-            - the max_best newest 'best' weights.
-            - max_n_weights most recent 'others' weights.
-        """
-
-        w_list = {}
-        w_list['all'] = [w for w in self.callback_paths['weights'].iterdir() if '.hdf5' in w.name]
-        w_list['best'] = [w for w in w_list['all'] if 'best' in w.name]
-        w_list['others'] = [w for w in w_list['all'] if w not in w_list['best']]
-        # remove older best
-        epochs_set = {}
-        epochs_set['best'] = list(
-            set([self.epoch_n_from_weights_name(w.name) for w in w_list['best']])
-        )
-        epochs_set['others'] = list(
-            set([self.epoch_n_from_weights_name(w.name) for w in w_list['others']])
-        )
-        keep_max = {'best': max_best, 'others': max_n_weights}
-        for type in ['others', 'best']:
-            if len(epochs_set[type]) > keep_max[type]:
-                epoch_list = np.sort(epochs_set[type])[::-1]
-                epoch_list = epoch_list[0 : keep_max[type]]
-                for w in w_list[type]:
-                    if self.epoch_n_from_weights_name(w.name) not in epoch_list:
-                        w.unlink()
-
-    def on_epoch_end(self, epoch, losses, generator, discriminator=None, metrics={}):
-        """
-        Manages the operations that are taken at the end of each epoch:
-        metric checks, weight saves, logging.
-        """
-
-        self.logger.info(losses)
-
-        monitor_op = {'max': np.greater, 'min': np.less}
-        extreme = {'max': -np.Inf, 'min': np.Inf}
-
-
-        for metric in metrics:
-            if metric in losses.keys():
-                if metric not in self.best_metrics.keys():
-                    self.best_metrics[metric] = extreme[metrics[metric]]
-
-                if monitor_op[metrics[metric]](losses[metric], self.best_metrics[metric]):
-                    self.logger.info(
-                        '{} improved from {:10.5f} to {:10.5f}'.format(
-                            metric, self.best_metrics[metric], losses[metric]
-                        )
-                    )
-                    self.logger.info('Saving weights')
-                    self.best_metrics[metric] = losses[metric]
-                    self._save_weights(epoch, generator, discriminator, metric=metric, best=True)
-                    self.since_last_epoch = 0
-                    return True
-                else:
-                    self.logger.info('{} did not improve.'.format(metric))
-                    if self.since_last_epoch >= self.fallback_save_every_n_epochs:
-                        self.logger.info('Saving weights anyways.')
-                        self._save_weights(epoch, generator, discriminator, best=False)
-                        self.since_last_epoch = 0
-                        return True
-
-            else:
-                self.logger.warning('{} is not monitored, cannot save weights.'.format(metric))
-        self.since_last_epoch += 1
-        return False
-
-    def epoch_n_from_weights_name(self, w_name):
-        """
-        Extracts the last epoch number from the standardized weights name.
-        Only works if the weights contain 'epoch' followed by 3 integers, for example:
-            some-architectureepoch023suffix.hdf5
-        """
-        try:
-            starting_epoch = int(w_name.split('epoch')[1][0:3])
-        except Exception as e:
-            self.logger.warning(
-                'Could not retrieve starting epoch from the weights name: \n{}'.format(w_name)
+            raise ValueError(
+                'No validation set size specified. (not operating in a validation set?)'
             )
-            self.logger.error(e)
-            starting_epoch = 0
-        return starting_epoch
 
-    def initialize_training(self, object):
-        """Function that is exectured prior to training.
-
-        Wraps up most of the functions of this class:
-        load the weights if any are given, generaters names for session and weights,
-        creates directories and prints the training session.
+    def get_validation_set(self, batch_size):
+        """
+        Returns a batch for each image in the validation set.
+        Flattens and splits them to feed it to Keras's model.evaluate.
         """
 
-        object.weights_generator = self.pretrained_generator_weights
-        object.weights_discriminator = self.pretrained_discriminator_weights
-        object._load_weights()
-        w_name = object.weights_generator
-        if w_name:
-            last_epoch = self.epoch_n_from_weights_name(w_name.name)
+        if self.n_validation_samples:
+            batches = self.get_validation_batches(batch_size)
+            valid_set = {'lr': [], 'hr': []}
+            for batch in batches:
+                for res in ('lr', 'hr'):
+                    valid_set[res].extend(batch[res])
+            for res in ('lr', 'hr'):
+                valid_set[res] = np.array(valid_set[res])
+            return valid_set
         else:
-            last_epoch = 0
-        self.callback_paths = self._make_callback_paths()
-        print(self.callback_paths)
-        self.callback_paths['weights'].mkdir(parents=True)
-        self.callback_paths['logs'].mkdir(parents=True)
-        object.settings['training_parameters']['starting_epoch'] = last_epoch
-        self.settings = self.update_config(object.settings)
-        self.print_training_setting(self.settings)
-        yaml.dump(
-            self.settings, (self.callback_paths['weights'] / self.session_config_name).open('w')
-        )
-        return last_epoch
+            self.logger.error(
+                'No validation set size specified. (not operating in a validation set?)'
+            )
+            raise ValueError(
+                'No validation set size specified. (not operating in a validation set?)'
+            )
+
+    # @shenghuiyu
+    def _choose_from_sum(self, file_names, file_dir):
+        list1 = []
+        list2 = []
+        output = []
+
+        for f in file_names:
+            if f[-5]=='1':
+                list1.append(f)
+            elif f[-5]=='2':
+                list2.append(f)
+
+
+        assert len(list1)==len(list2)
+
+
+        for i in range(len(list1)):
+            assert list1[i][:-5]==list2[i][:-5]
+
+            img1=Image.open(file_dir+list1[i])
+            img2=Image.open(file_dir+list2[i])
+            # array = np.array(img)
+            # print(len(array))
+
+            sum1=0
+            sum2=0
+            for w in range(img1.size[0]):
+                for h in range(img1.size[1]):
+                    sum1+=sum(img1.getpixel((w,h)))
+                    sum2+=sum(img2.getpixel((w,h)))
+
+            if sum1 > sum2:
+                output.append(list1[i])
+
+            else:
+                output.append(list2[i])
+
+            print("getting image summation:"+str(i)+"/"+str(len(list1)))
+
+        return output
