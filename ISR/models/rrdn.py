@@ -156,7 +156,7 @@ class RRDN(ImageModel):
         # Global Residual Learning
         GRL = Add(name='GRL')([post_blocks, pre_blocks])
         # Upscaling
-        PS = self._pixel_shuffle(GRL)
+        # PS = self._pixel_shuffle(GRL)
         # Compose SR image
         SR = Conv2D(
             self.c_dim,
@@ -164,5 +164,5 @@ class RRDN(ImageModel):
             padding='same',
             kernel_initializer=self.initializer,
             name='SR',
-        )(PS)
+        )(GRL)
         return Model(inputs=LR_input, outputs=SR)

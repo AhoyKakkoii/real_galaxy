@@ -38,6 +38,7 @@ class DataHandler:
             file_names = os.listdir(self.folders[res])
             file_names = [file for file in file_names if file.endswith(self.extensions)]
             
+            file_names.sort()
 
             # @shenghuiyu
             if res == 'hr':
@@ -161,11 +162,7 @@ class DataHandler:
 
     def _transform_batch(self, batch, transforms):
         """ Transforms each individual image of the batch independently. """
-        
-        t_batch = np.array(
-            [self._apply_transform(img, transforms[i]) for i, img in enumerate(batch)]
-        )
-        return t_batch
+        return self._apply_transform(batch, transforms)
 
     def get_batch(self, batch_size, idx=None, flatness=0.0):
         """
@@ -186,18 +183,19 @@ class DataHandler:
             img = {}
             for res in ['lr', 'hr']:
                 img_path = os.path.join(self.folders[res], self.img_list[res][idx])
-                print('\nget batch path:', img_path)
+                # print('\nget batch path:', img_path)
                 img[res] = imageio.imread(img_path) / 255.0
             # batch = self._crop_imgs(img, batch_size, flatness)
-            
-            batch['lr'].append(img['lr'])
-            batch['hr'].append(img['hr'])
-            
-        transforms = np.random.randint(0, 3, (batch_size, 2))
-        result_batch['lr'] = self._transform_batch(np.array(batch['lr']), transforms)
-        result_batch['hr'] = self._transform_batch(np.array(batch['hr']), transforms)
-            
-        print('shape,', result_batch['lr'].shape)
+            transforms = np.random.randint(0, 3, 2)
+            batch['lr'] = self._transform_batch(img['lr'], transforms)
+            batch['hr'] = self._transform_batch(img['hr'], transforms)
+            result_batch['lr'].append(batch['lr'])
+            result_batch['hr'].append(batch['hr'])
+
+        result_batch['lr'] = np.array(result_batch['lr'])
+        result_batch['hr'] = np.array(result_batch['hr'])
+
+        # print('shape,', result_batch['lr'].shape)
         return result_batch
 
     def get_validation_batches(self, batch_size):

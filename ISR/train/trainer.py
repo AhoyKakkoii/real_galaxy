@@ -232,12 +232,12 @@ class Trainer:
         """
 
         if self.weights_generator:
-            self.model.get_layer('generator').load_weights(self.weights_generator)
+            self.model.get_layer('generator').load_weights(str(self.weights_generator))
 
         if self.discriminator:
             if self.weights_discriminator:
-                self.model.get_layer('discriminator').load_weights(self.weights_discriminator)
-                self.discriminator.model.load_weights(self.weights_discriminator)
+                self.model.get_layer('discriminator').load_weights(str(self.weights_discriminator))
+                self.discriminator.model.load_weights(str(self.weights_discriminator))
 
     def _format_losses(self, prefix, losses, model_metrics):
         """ Creates a dictionary for tensorboard tracking. """

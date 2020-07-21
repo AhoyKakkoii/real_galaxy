@@ -66,7 +66,7 @@ class Discriminator:
             )
         x = Dense(self.block_param['filters'][-1] * 2, name='Dense_1024')(x)
         x = LeakyReLU(alpha=0.2)(x)
-        # x = Flatten()(x)
+        x = Flatten()(x)
         x = Dense(1, name='Dense_last')(x)
         HR_v_SR = Activation('sigmoid')(x)
 
