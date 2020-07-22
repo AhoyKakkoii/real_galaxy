@@ -172,20 +172,32 @@ class DataHandler:
             flatness: float in [0,1], is the patch "flatness" threshold.
                 Determines what level of detail the patches need to meet. 0 means any patch is accepted.
         """
+        result_batch = {'lr':[], 'hr':[]}
+        batch = {'lr':[], 'hr':[]}
+        for i in range(batch_size):
+            if not idx:
+                # randomly select one image. idx is given at validation time.
+                idx = np.random.choice(range(len(self.img_list['hr'])))
+                img = {}
+                for res in ['lr', 'hr']:
+                    img_path = os.path.join(self.folders[res], self.img_list[res][idx])
+                    img[res] = imageio.imread(img_path) / 255.0
+        # batch = self._crop_imgs(img, batch_size, flatness)
+                # transforms = np.random.randint(0, 3, 2)
+                # batch['lr'] = self._transform_batch(img['lr'], transforms)
+                # batch['hr'] = self._transform_batch(img['hr'], transforms)
+                # result_batch['lr'].append(batch['lr'])
+                # result_batch['hr'].append(batch['hr'])
+                # idx = None
+                batch['lr'].append(img['lr'])
+                batch['hr'].append(img['hr'])
 
-        if not idx:
-            # randomly select one image. idx is given at validation time.
-            idx = np.random.choice(range(len(self.img_list['hr'])))
-        img = {}
-        for res in ['lr', 'hr']:
-            img_path = os.path.join(self.folders[res], self.img_list[res][idx])
-            img[res] = imageio.imread(img_path) / 255.0
-        batch = self._crop_imgs(img, batch_size, flatness)
         transforms = np.random.randint(0, 3, (batch_size, 2))
-        batch['lr'] = self._transform_batch(batch['lr'], transforms)
-        batch['hr'] = self._transform_batch(batch['hr'], transforms)
 
-        return batch
+        result_batch['lr'] = self._transform_batch(batch['lr'], transforms)
+        result_batch['hr'] = self._transform_batch(batch['hr'], transforms)
+
+        return result_batch
 
     def get_validation_batches(self, batch_size):
         """ Returns a batch for each image in the validation set. """
