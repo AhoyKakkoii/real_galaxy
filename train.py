@@ -1,5 +1,5 @@
 from ISR.train import Trainer
-from ISR.models import RDN
+from ISR.models import RRDN
 from ISR.models import Discriminator
 from ISR.models import Cut_VGG19
 
@@ -8,7 +8,7 @@ layers_to_extract = [5, 9]
 scale = 1
 hr_train_patch_size = lr_train_patch_size * scale
 
-rdn = RDN(arch_params={'C': 6, 'D': 20, 'G': 64, 'G0': 64,
+rrdn = RRDN(arch_params={'C': 4, 'D': 3, 'G': 64, 'G0': 64, 'T': 10,
                        'x': scale}, patch_size=lr_train_patch_size)
 f_ext = Cut_VGG19(patch_size=hr_train_patch_size,
                   layers_to_extract=layers_to_extract)
@@ -33,7 +33,7 @@ learning_rate = {'initial_value': 0.0004,
 flatness = {'min': 0.0, 'max': 0.15, 'increase': 0.01, 'increase_frequency': 5}
 
 trainer = Trainer(
-    generator=rdn,
+    generator=rrdn,
     discriminator=discr,
     feature_extractor=f_ext,
     hr_train_dir='galaxy_zoo/individuals_2blend_train/',
@@ -46,13 +46,13 @@ trainer = Trainer(
     dataname='div2k',
     log_dirs=log_dirs,
     weights_generator=None,
-    weights_discriminator=None,
+    weights_discriminator='model/disc/weights-improvement-379-1.00.hdf5',
     n_validation=5,  #to be modified
 )
 
 trainer.train(
-    epochs=200,
-    steps_per_epoch=5000,
-    batch_size=16,
+    epochs=1000,
+    steps_per_epoch=1000,
+    batch_size=8,
     monitored_metrics={'val_generator_PSNR_Y': 'max'}
 )

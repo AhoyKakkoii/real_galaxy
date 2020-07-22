@@ -36,7 +36,7 @@ class DataHandler:
         for res in ['hr', 'lr']:
             file_names = os.listdir(self.folders[res])
             file_names = [file for file in file_names if file.endswith(self.extensions)]
-            
+            file_names.sort()
 
             # @shenghuiyu
             if res == 'hr':
@@ -243,6 +243,7 @@ class DataHandler:
 
 
         for i in range(len(list1)):
+            # print(list1[i], list2[i])
             assert list1[i][:-5]==list2[i][:-5]
 
             img1=Image.open(file_dir+list1[i])
