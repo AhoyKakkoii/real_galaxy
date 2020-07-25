@@ -27,7 +27,7 @@ class Discriminator:
         self.kernel_size = kernel_size
         self.block_param = {}
         self.block_param['filters'] = (64, 128, 128, 256, 256, 512, 512, 1024, 1024)
-        self.block_param['strides'] = (2, 1, 2, 1, 2, 1, 2, 1, 2)
+        self.block_param['strides'] = (2, 1, 2, 1, 2, 1, 1, 1, 1)
         self.block_num = len(self.block_param['filters'])
         self.model = self._build_disciminator()
         optimizer = Adam(0.0002, 0.5)
