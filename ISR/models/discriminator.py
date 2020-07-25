@@ -1,4 +1,4 @@
-from tensorflow.keras.layers import concatenate, Flatten, Input, Activation, Dense, Conv2D, BatchNormalization, LeakyReLU
+from tensorflow.keras.layers import concatenate,Dropout, Flatten, Input, Activation, Dense, Conv2D, BatchNormalization, LeakyReLU
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import Adam
 
@@ -26,8 +26,8 @@ class Discriminator:
         self.patch_size = patch_size
         self.kernel_size = kernel_size
         self.block_param = {}
-        self.block_param['filters'] = (64, 128, 128, 256, 256, 512, 512)
-        self.block_param['strides'] = (2, 1, 2, 1, 1, 1, 1)
+        self.block_param['filters'] = (64, 128, 128, 256, 256, 512, 512, 1024, 1024)
+        self.block_param['strides'] = (2, 1, 2, 1, 2, 1, 2, 1, 2)
         self.block_num = len(self.block_param['filters'])
         self.model = self._build_disciminator()
         optimizer = Adam(0.0002, 0.5)
