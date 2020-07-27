@@ -46,7 +46,7 @@ trainer = Trainer(
     dataname='div2k',
     log_dirs=log_dirs,
     weights_generator=None,
-    weights_discriminator='model/disc/weights-improvement-379-1.00.hdf5',
+    weights_discriminator=None,
     n_validation=5,  #to be modified
 )
 

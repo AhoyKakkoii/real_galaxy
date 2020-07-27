@@ -1,0 +1,175 @@
+2020-07-27 12:02:55,735 - ISR.utils.train_helper - INFO - 
+Training details:
+2020-07-27 12:02:55,736 - ISR.utils.train_helper - INFO -   training_parameters: 
+2020-07-27 12:02:55,736 - ISR.utils.train_helper - INFO -     metrics: {'generator': <function PSNR_Y at 0x0000027C3C6BCEA0>}
+2020-07-27 12:02:55,736 - ISR.utils.train_helper - INFO -     losses: {'generator': 'mae', 'discriminator': 'binary_crossentropy', 'feature_extractor': 'mse'}
+2020-07-27 12:02:55,736 - ISR.utils.train_helper - INFO -     adam_optimizer: {'beta1': 0.9, 'beta2': 0.999, 'epsilon': None}
+2020-07-27 12:02:55,736 - ISR.utils.train_helper - INFO -     learning_rate: {'initial_value': 0.0004, 'decay_factor': 0.5, 'decay_frequency': 30}
+2020-07-27 12:02:55,736 - ISR.utils.train_helper - INFO -     flatness: {'min': 0.0, 'max': 0.15, 'increase': 0.01, 'increase_frequency': 5}
+2020-07-27 12:02:55,738 - ISR.utils.train_helper - INFO -     n_validation: 5
+2020-07-27 12:02:55,739 - ISR.utils.train_helper - INFO -     dataname: div2k
+2020-07-27 12:02:55,739 - ISR.utils.train_helper - INFO -     fallback_save_every_n_epochs: 2
+2020-07-27 12:02:55,739 - ISR.utils.train_helper - INFO -     log_dirs: {'logs': './logs', 'weights': './weights'}
+2020-07-27 12:02:55,739 - ISR.utils.train_helper - INFO -     loss_weights: {'generator': 0.0, 'feature_extractor': 0.0833, 'discriminator': 0.01}
+2020-07-27 12:02:55,739 - ISR.utils.train_helper - INFO -     hr_valid_dir: galaxy_zoo/individuals_2blend_valid/
+2020-07-27 12:02:55,739 - ISR.utils.train_helper - INFO -     lr_valid_dir: galaxy_zoo/merged_2blend_valid/
+2020-07-27 12:02:55,740 - ISR.utils.train_helper - INFO -     hr_train_dir: galaxy_zoo/individuals_2blend_train/
+2020-07-27 12:02:55,740 - ISR.utils.train_helper - INFO -     lr_train_dir: galaxy_zoo/merged_2blend_train/
+2020-07-27 12:02:55,740 - ISR.utils.train_helper - INFO -     lr_patch_size: 80
+2020-07-27 12:02:55,740 - ISR.utils.train_helper - INFO -     steps_per_epoch: 1000
+2020-07-27 12:02:55,740 - ISR.utils.train_helper - INFO -     batch_size: 8
+2020-07-27 12:02:55,740 - ISR.utils.train_helper - INFO -     starting_epoch: 0
+2020-07-27 12:02:55,741 - ISR.utils.train_helper - INFO -   generator: 
+2020-07-27 12:02:55,741 - ISR.utils.train_helper - INFO -     name: rrdn
+2020-07-27 12:02:55,741 - ISR.utils.train_helper - INFO -     parameters: {'C': 4, 'D': 3, 'G': 64, 'G0': 64, 'T': 10, 'x': 1}
+2020-07-27 12:02:55,741 - ISR.utils.train_helper - INFO -     weights_generator: None
+2020-07-27 12:02:55,741 - ISR.utils.train_helper - INFO -   discriminator: 
+2020-07-27 12:02:55,741 - ISR.utils.train_helper - INFO -     name: srgan-large
+2020-07-27 12:02:55,742 - ISR.utils.train_helper - INFO -     weights_discriminator: None
+2020-07-27 12:02:55,742 - ISR.utils.train_helper - INFO -   feature_extractor: 
+2020-07-27 12:02:55,742 - ISR.utils.train_helper - INFO -     name: vgg19
+2020-07-27 12:02:55,742 - ISR.utils.train_helper - INFO -     layers: [5, 9]
+2020-07-27 12:02:58,028 - ISR.train.trainer - INFO - Epoch 0/1000
+2020-07-27 12:02:58,033 - ISR.train.trainer - INFO - Current learning rate: 0.00039999998989515007
+2020-07-27 12:20:19,747 - ISR.utils.train_helper - INFO - 
+Training details:
+2020-07-27 12:20:19,747 - ISR.utils.train_helper - INFO -   training_parameters: 
+2020-07-27 12:20:19,748 - ISR.utils.train_helper - INFO -     metrics: {'generator': <function PSNR_Y at 0x000001D5D364EEA0>}
+2020-07-27 12:20:19,748 - ISR.utils.train_helper - INFO -     losses: {'generator': 'mae', 'discriminator': 'binary_crossentropy', 'feature_extractor': 'mse'}
+2020-07-27 12:20:19,748 - ISR.utils.train_helper - INFO -     adam_optimizer: {'beta1': 0.9, 'beta2': 0.999, 'epsilon': None}
+2020-07-27 12:20:19,748 - ISR.utils.train_helper - INFO -     learning_rate: {'initial_value': 0.0004, 'decay_factor': 0.5, 'decay_frequency': 30}
+2020-07-27 12:20:19,748 - ISR.utils.train_helper - INFO -     flatness: {'min': 0.0, 'max': 0.15, 'increase': 0.01, 'increase_frequency': 5}
+2020-07-27 12:20:19,749 - ISR.utils.train_helper - INFO -     n_validation: 5
+2020-07-27 12:20:19,749 - ISR.utils.train_helper - INFO -     dataname: div2k
+2020-07-27 12:20:19,749 - ISR.utils.train_helper - INFO -     fallback_save_every_n_epochs: 2
+2020-07-27 12:20:19,749 - ISR.utils.train_helper - INFO -     log_dirs: {'logs': './logs', 'weights': './weights'}
+2020-07-27 12:20:19,749 - ISR.utils.train_helper - INFO -     loss_weights: {'generator': 0.0, 'feature_extractor': 0.0833, 'discriminator': 0.01}
+2020-07-27 12:20:19,750 - ISR.utils.train_helper - INFO -     hr_valid_dir: galaxy_zoo/individuals_2blend_valid/
+2020-07-27 12:20:19,750 - ISR.utils.train_helper - INFO -     lr_valid_dir: galaxy_zoo/merged_2blend_valid/
+2020-07-27 12:20:19,750 - ISR.utils.train_helper - INFO -     hr_train_dir: galaxy_zoo/individuals_2blend_train/
+2020-07-27 12:20:19,750 - ISR.utils.train_helper - INFO -     lr_train_dir: galaxy_zoo/merged_2blend_train/
+2020-07-27 12:20:19,751 - ISR.utils.train_helper - INFO -     lr_patch_size: 80
+2020-07-27 12:20:19,753 - ISR.utils.train_helper - INFO -     steps_per_epoch: 1000
+2020-07-27 12:20:19,753 - ISR.utils.train_helper - INFO -     batch_size: 8
+2020-07-27 12:20:19,753 - ISR.utils.train_helper - INFO -     starting_epoch: 0
+2020-07-27 12:20:19,753 - ISR.utils.train_helper - INFO -   generator: 
+2020-07-27 12:20:19,754 - ISR.utils.train_helper - INFO -     name: rrdn
+2020-07-27 12:20:19,754 - ISR.utils.train_helper - INFO -     parameters: {'C': 4, 'D': 3, 'G': 64, 'G0': 64, 'T': 10, 'x': 1}
+2020-07-27 12:20:19,754 - ISR.utils.train_helper - INFO -     weights_generator: None
+2020-07-27 12:20:19,754 - ISR.utils.train_helper - INFO -   discriminator: 
+2020-07-27 12:20:19,754 - ISR.utils.train_helper - INFO -     name: srgan-large
+2020-07-27 12:20:19,755 - ISR.utils.train_helper - INFO -     weights_discriminator: None
+2020-07-27 12:20:19,755 - ISR.utils.train_helper - INFO -   feature_extractor: 
+2020-07-27 12:20:19,755 - ISR.utils.train_helper - INFO -     name: vgg19
+2020-07-27 12:20:19,755 - ISR.utils.train_helper - INFO -     layers: [5, 9]
+2020-07-27 12:23:31,409 - ISR.utils.train_helper - INFO - 
+Training details:
+2020-07-27 12:23:31,409 - ISR.utils.train_helper - INFO -   training_parameters: 
+2020-07-27 12:23:31,409 - ISR.utils.train_helper - INFO -     metrics: {'generator': <function PSNR_Y at 0x000001FD571FDEA0>}
+2020-07-27 12:23:31,410 - ISR.utils.train_helper - INFO -     losses: {'generator': 'mae', 'discriminator': 'binary_crossentropy', 'feature_extractor': 'mse'}
+2020-07-27 12:23:31,410 - ISR.utils.train_helper - INFO -     adam_optimizer: {'beta1': 0.9, 'beta2': 0.999, 'epsilon': None}
+2020-07-27 12:23:31,410 - ISR.utils.train_helper - INFO -     learning_rate: {'initial_value': 0.0004, 'decay_factor': 0.5, 'decay_frequency': 30}
+2020-07-27 12:23:31,410 - ISR.utils.train_helper - INFO -     flatness: {'min': 0.0, 'max': 0.15, 'increase': 0.01, 'increase_frequency': 5}
+2020-07-27 12:23:31,410 - ISR.utils.train_helper - INFO -     n_validation: 5
+2020-07-27 12:23:31,410 - ISR.utils.train_helper - INFO -     dataname: div2k
+2020-07-27 12:23:31,411 - ISR.utils.train_helper - INFO -     fallback_save_every_n_epochs: 2
+2020-07-27 12:23:31,411 - ISR.utils.train_helper - INFO -     log_dirs: {'logs': './logs', 'weights': './weights'}
+2020-07-27 12:23:31,411 - ISR.utils.train_helper - INFO -     loss_weights: {'generator': 0.0, 'feature_extractor': 0.0833, 'discriminator': 0.01}
+2020-07-27 12:23:31,411 - ISR.utils.train_helper - INFO -     hr_valid_dir: galaxy_zoo/individuals_2blend_valid/
+2020-07-27 12:23:31,411 - ISR.utils.train_helper - INFO -     lr_valid_dir: galaxy_zoo/merged_2blend_valid/
+2020-07-27 12:23:31,411 - ISR.utils.train_helper - INFO -     hr_train_dir: galaxy_zoo/individuals_2blend_train/
+2020-07-27 12:23:31,411 - ISR.utils.train_helper - INFO -     lr_train_dir: galaxy_zoo/merged_2blend_train/
+2020-07-27 12:23:31,412 - ISR.utils.train_helper - INFO -     lr_patch_size: 80
+2020-07-27 12:23:31,412 - ISR.utils.train_helper - INFO -     steps_per_epoch: 1000
+2020-07-27 12:23:31,412 - ISR.utils.train_helper - INFO -     batch_size: 8
+2020-07-27 12:23:31,412 - ISR.utils.train_helper - INFO -     starting_epoch: 0
+2020-07-27 12:23:31,412 - ISR.utils.train_helper - INFO -   generator: 
+2020-07-27 12:23:31,412 - ISR.utils.train_helper - INFO -     name: rrdn
+2020-07-27 12:23:31,413 - ISR.utils.train_helper - INFO -     parameters: {'C': 4, 'D': 3, 'G': 64, 'G0': 64, 'T': 10, 'x': 1}
+2020-07-27 12:23:31,413 - ISR.utils.train_helper - INFO -     weights_generator: None
+2020-07-27 12:23:31,413 - ISR.utils.train_helper - INFO -   discriminator: 
+2020-07-27 12:23:31,413 - ISR.utils.train_helper - INFO -     name: srgan-large
+2020-07-27 12:23:31,413 - ISR.utils.train_helper - INFO -     weights_discriminator: None
+2020-07-27 12:23:31,413 - ISR.utils.train_helper - INFO -   feature_extractor: 
+2020-07-27 12:23:31,413 - ISR.utils.train_helper - INFO -     name: vgg19
+2020-07-27 12:23:31,414 - ISR.utils.train_helper - INFO -     layers: [5, 9]
+2020-07-27 12:27:32,265 - ISR.utils.train_helper - INFO - 
+Training details:
+2020-07-27 12:27:32,265 - ISR.utils.train_helper - INFO -   training_parameters: 
+2020-07-27 12:27:32,265 - ISR.utils.train_helper - INFO -     metrics: {'generator': <function PSNR_Y at 0x000001DD5868EEA0>}
+2020-07-27 12:27:32,266 - ISR.utils.train_helper - INFO -     losses: {'generator': 'mae', 'discriminator': 'binary_crossentropy', 'feature_extractor': 'mse'}
+2020-07-27 12:27:32,266 - ISR.utils.train_helper - INFO -     adam_optimizer: {'beta1': 0.9, 'beta2': 0.999, 'epsilon': None}
+2020-07-27 12:27:32,266 - ISR.utils.train_helper - INFO -     learning_rate: {'initial_value': 0.0004, 'decay_factor': 0.5, 'decay_frequency': 30}
+2020-07-27 12:27:32,266 - ISR.utils.train_helper - INFO -     flatness: {'min': 0.0, 'max': 0.15, 'increase': 0.01, 'increase_frequency': 5}
+2020-07-27 12:27:32,267 - ISR.utils.train_helper - INFO -     n_validation: 5
+2020-07-27 12:27:32,267 - ISR.utils.train_helper - INFO -     dataname: div2k
+2020-07-27 12:27:32,267 - ISR.utils.train_helper - INFO -     fallback_save_every_n_epochs: 2
+2020-07-27 12:27:32,267 - ISR.utils.train_helper - INFO -     log_dirs: {'logs': './logs', 'weights': './weights'}
+2020-07-27 12:27:32,268 - ISR.utils.train_helper - INFO -     loss_weights: {'generator': 0.0, 'feature_extractor': 0.0833, 'discriminator': 0.01}
+2020-07-27 12:27:32,268 - ISR.utils.train_helper - INFO -     hr_valid_dir: galaxy_zoo/individuals_2blend_valid/
+2020-07-27 12:27:32,268 - ISR.utils.train_helper - INFO -     lr_valid_dir: galaxy_zoo/merged_2blend_valid/
+2020-07-27 12:27:32,268 - ISR.utils.train_helper - INFO -     hr_train_dir: galaxy_zoo/individuals_2blend_train/
+2020-07-27 12:27:32,268 - ISR.utils.train_helper - INFO -     lr_train_dir: galaxy_zoo/merged_2blend_train/
+2020-07-27 12:27:32,268 - ISR.utils.train_helper - INFO -     lr_patch_size: 80
+2020-07-27 12:27:32,268 - ISR.utils.train_helper - INFO -     steps_per_epoch: 1000
+2020-07-27 12:27:32,269 - ISR.utils.train_helper - INFO -     batch_size: 8
+2020-07-27 12:27:32,269 - ISR.utils.train_helper - INFO -     starting_epoch: 0
+2020-07-27 12:27:32,269 - ISR.utils.train_helper - INFO -   generator: 
+2020-07-27 12:27:32,269 - ISR.utils.train_helper - INFO -     name: rrdn
+2020-07-27 12:27:32,269 - ISR.utils.train_helper - INFO -     parameters: {'C': 4, 'D': 3, 'G': 64, 'G0': 64, 'T': 10, 'x': 1}
+2020-07-27 12:27:32,270 - ISR.utils.train_helper - INFO -     weights_generator: None
+2020-07-27 12:27:32,272 - ISR.utils.train_helper - INFO -   discriminator: 
+2020-07-27 12:27:32,272 - ISR.utils.train_helper - INFO -     name: srgan-large
+2020-07-27 12:27:32,273 - ISR.utils.train_helper - INFO -     weights_discriminator: None
+2020-07-27 12:27:32,273 - ISR.utils.train_helper - INFO -   feature_extractor: 
+2020-07-27 12:27:32,273 - ISR.utils.train_helper - INFO -     name: vgg19
+2020-07-27 12:27:32,273 - ISR.utils.train_helper - INFO -     layers: [5, 9]
+2020-07-27 12:27:34,969 - ISR.train.trainer - INFO - Epoch 0/1000
+2020-07-27 12:27:34,974 - ISR.train.trainer - INFO - Current learning rate: 0.00039999998989515007
+2020-07-27 12:30:45,445 - ISR.utils.train_helper - INFO - 
+Training details:
+2020-07-27 12:30:45,445 - ISR.utils.train_helper - INFO -   training_parameters: 
+2020-07-27 12:30:45,446 - ISR.utils.train_helper - INFO -     metrics: {'generator': <function PSNR_Y at 0x000001572E68DEA0>}
+2020-07-27 12:30:45,446 - ISR.utils.train_helper - INFO -     losses: {'generator': 'mae', 'discriminator': 'binary_crossentropy', 'feature_extractor': 'mse'}
+2020-07-27 12:30:45,446 - ISR.utils.train_helper - INFO -     adam_optimizer: {'beta1': 0.9, 'beta2': 0.999, 'epsilon': None}
+2020-07-27 12:30:45,446 - ISR.utils.train_helper - INFO -     learning_rate: {'initial_value': 0.0004, 'decay_factor': 0.5, 'decay_frequency': 30}
+2020-07-27 12:30:45,448 - ISR.utils.train_helper - INFO -     flatness: {'min': 0.0, 'max': 0.15, 'increase': 0.01, 'increase_frequency': 5}
+2020-07-27 12:30:45,448 - ISR.utils.train_helper - INFO -     n_validation: 5
+2020-07-27 12:30:45,448 - ISR.utils.train_helper - INFO -     dataname: div2k
+2020-07-27 12:30:45,448 - ISR.utils.train_helper - INFO -     fallback_save_every_n_epochs: 2
+2020-07-27 12:30:45,448 - ISR.utils.train_helper - INFO -     log_dirs: {'logs': './logs', 'weights': './weights'}
+2020-07-27 12:30:45,448 - ISR.utils.train_helper - INFO -     loss_weights: {'generator': 0.0, 'feature_extractor': 0.0833, 'discriminator': 0.01}
+2020-07-27 12:30:45,449 - ISR.utils.train_helper - INFO -     hr_valid_dir: galaxy_zoo/individuals_2blend_valid/
+2020-07-27 12:30:45,449 - ISR.utils.train_helper - INFO -     lr_valid_dir: galaxy_zoo/merged_2blend_valid/
+2020-07-27 12:30:45,449 - ISR.utils.train_helper - INFO -     hr_train_dir: galaxy_zoo/individuals_2blend_train/
+2020-07-27 12:30:45,449 - ISR.utils.train_helper - INFO -     lr_train_dir: galaxy_zoo/merged_2blend_train/
+2020-07-27 12:30:45,449 - ISR.utils.train_helper - INFO -     lr_patch_size: 80
+2020-07-27 12:30:45,449 - ISR.utils.train_helper - INFO -     steps_per_epoch: 1000
+2020-07-27 12:30:45,449 - ISR.utils.train_helper - INFO -     batch_size: 2
+2020-07-27 12:30:45,450 - ISR.utils.train_helper - INFO -     starting_epoch: 0
+2020-07-27 12:30:45,450 - ISR.utils.train_helper - INFO -   generator: 
+2020-07-27 12:30:45,450 - ISR.utils.train_helper - INFO -     name: rrdn
+2020-07-27 12:30:45,450 - ISR.utils.train_helper - INFO -     parameters: {'C': 4, 'D': 3, 'G': 64, 'G0': 64, 'T': 10, 'x': 1}
+2020-07-27 12:30:45,450 - ISR.utils.train_helper - INFO -     weights_generator: None
+2020-07-27 12:30:45,450 - ISR.utils.train_helper - INFO -   discriminator: 
+2020-07-27 12:30:45,450 - ISR.utils.train_helper - INFO -     name: srgan-large
+2020-07-27 12:30:45,451 - ISR.utils.train_helper - INFO -     weights_discriminator: None
+2020-07-27 12:30:45,451 - ISR.utils.train_helper - INFO -   feature_extractor: 
+2020-07-27 12:30:45,451 - ISR.utils.train_helper - INFO -     name: vgg19
+2020-07-27 12:30:45,451 - ISR.utils.train_helper - INFO -     layers: [5, 9]
+2020-07-27 12:30:47,656 - ISR.train.trainer - INFO - Epoch 0/1000
+2020-07-27 12:30:47,661 - ISR.train.trainer - INFO - Current learning rate: 0.00039999998989515007
+2020-07-27 12:31:02,012 - ISR.train.trainer - DEBUG - Losses at step 0:
+ {'train_d_real_loss': 0.7420535087585449, 'train_d_real_accuracy': 0.5, 'train_d_fake_loss': 21.457080841064453, 'train_d_fake_accuracy': 0.0, 'train_loss': 0.5757793188095093, 'train_generator_loss': 0.11998956650495529, 'train_discriminator_loss': 0.6822167634963989, 'train_feature_extractor_loss': 2.769639253616333, 'train_feature_extractor_1_loss': 10.890795707702637, 'train_generator_PSNR_Y': 14.47337818145752}
+2020-07-27 12:31:02,435 - ISR.train.trainer - DEBUG - Losses at step 1:
+ {'train_d_real_loss': 0.13456828892230988, 'train_d_real_accuracy': 1.0, 'train_d_fake_loss': 5.098495006561279, 'train_d_fake_accuracy': 0.0, 'train_loss': 0.6300638318061829, 'train_generator_loss': 0.14883136749267578, 'train_discriminator_loss': 1.7247827053070068, 'train_feature_extractor_loss': 2.982795476913452, 'train_feature_extractor_1_loss': 11.730673789978027, 'train_generator_PSNR_Y': 16.116992950439453}
+2020-07-27 12:31:02,857 - ISR.train.trainer - DEBUG - Losses at step 2:
+ {'train_d_real_loss': 26.828250885009766, 'train_d_real_accuracy': 0.0, 'train_d_fake_loss': 5.649807929992676, 'train_d_fake_accuracy': 0.25, 'train_loss': 0.31056880950927734, 'train_generator_loss': 0.06625910103321075, 'train_discriminator_loss': 2.6859631538391113, 'train_feature_extractor_loss': 1.3145407438278198, 'train_feature_extractor_1_loss': 5.497203826904297, 'train_generator_PSNR_Y': 24.0351619720459}
+2020-07-27 12:31:03,287 - ISR.train.trainer - DEBUG - Losses at step 3:
+ {'train_d_real_loss': 11.382619857788086, 'train_d_real_accuracy': 0.0, 'train_d_fake_loss': 9.777225494384766, 'train_d_fake_accuracy': 0.0, 'train_loss': 0.4340011477470398, 'train_generator_loss': 0.0525689460337162, 'train_discriminator_loss': 2.889301300048828, 'train_feature_extractor_loss': 1.8498791456222534, 'train_feature_extractor_1_loss': 7.876606464385986, 'train_generator_PSNR_Y': 23.07575225830078}
+2020-07-27 12:31:03,716 - ISR.train.trainer - DEBUG - Losses at step 4:
+ {'train_d_real_loss': 5.996403694152832, 'train_d_real_accuracy': 0.0, 'train_d_fake_loss': 16.30790901184082, 'train_d_fake_accuracy': 0.0, 'train_loss': 0.3827418088912964, 'train_generator_loss': 0.05476757884025574, 'train_discriminator_loss': 3.4138879776000977, 'train_feature_extractor_loss': 1.821844458580017, 'train_feature_extractor_1_loss': 6.547973155975342, 'train_generator_PSNR_Y': 24.376605987548828}
+2020-07-27 12:31:04,138 - ISR.train.trainer - DEBUG - Losses at step 5:
+ {'train_d_real_loss': 6.6239013671875, 'train_d_real_accuracy': 0.0, 'train_d_fake_loss': 4.001244068145752, 'train_d_fake_accuracy': 0.5, 'train_loss': 0.2749459445476532, 'train_generator_loss': 0.056263137608766556, 'train_discriminator_loss': 2.633862018585205, 'train_feature_extractor_loss': 1.3344002962112427, 'train_feature_extractor_1_loss': 4.6345624923706055, 'train_generator_PSNR_Y': 22.687847137451172}
+2020-07-27 12:31:04,564 - ISR.train.trainer - DEBUG - Losses at step 6:
+ {'train_d_real_loss': 22.18380355834961, 'train_d_real_accuracy': 0.0, 'train_d_fake_loss': 9.118552207946777, 'train_d_fake_accuracy': 0.0, 'train_loss': 0.21063151955604553, 'train_generator_loss': 0.04655620455741882, 'train_discriminator_loss': 1.4010593891143799, 'train_feature_extractor_loss': 0.9768046736717224, 'train_feature_extractor_1_loss': 3.743985891342163, 'train_generator_PSNR_Y': 24.019102096557617}
