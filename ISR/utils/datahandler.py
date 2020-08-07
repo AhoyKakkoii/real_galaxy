@@ -7,6 +7,7 @@ from PIL import Image
 class DataHandler:
     """
     DataHandler generate augmented batches used for training or validation.
+
     Args:
         lr_dir: directory containing the Low Res images.
         hr_dir: directory containing the High Res images.
@@ -36,14 +37,16 @@ class DataHandler:
         for res in ['hr', 'lr']:
             file_names = os.listdir(self.folders[res])
             file_names = [file for file in file_names if file.endswith(self.extensions)]
-            file_names.sort()
+            
 
             # @shenghuiyu
             if res == 'hr':
                 file_names=self._choose_from_sum(file_names, self.folders[res])
 
             self.img_list[res] = np.sort(file_names)
-
+        print('file_names', self.img_list)
+        print('\n-------------------------------------------------\n')
+            
         if self.n_validation_samples:
             print(self.img_list)
             samples = np.random.choice(
@@ -64,6 +67,7 @@ class DataHandler:
         # LR_name.png = HR_name_2.png
         # or
         # LR_name.png = HR_name_1.png
+        print('lr',self.img_list['lr'])
         LR_name_root = [x.split('.')[0].split('_')[1:3] for x in self.img_list['lr']]
         HR_name_root = [x.split('.')[0].split('_')[1:3] for x in self.img_list['hr']]
         
@@ -157,7 +161,7 @@ class DataHandler:
 
     def _transform_batch(self, batch, transforms):
         """ Transforms each individual image of the batch independently. """
-
+        
         t_batch = np.array(
             [self._apply_transform(img, transforms[i]) for i, img in enumerate(batch)]
         )
@@ -167,6 +171,7 @@ class DataHandler:
         """
         Returns a dictionary with keys ('lr', 'hr') containing training batches
         of Low Res and High Res image patches.
+
         Args:
             batch_size: integer.
             flatness: float in [0,1], is the patch "flatness" threshold.
@@ -175,28 +180,24 @@ class DataHandler:
         result_batch = {'lr':[], 'hr':[]}
         batch = {'lr':[], 'hr':[]}
         for i in range(batch_size):
-            if not idx:
-                # randomly select one image. idx is given at validation time.
-                idx = np.random.choice(range(len(self.img_list['hr'])))
+            # randomly select one image. idx is given at validation time.
+            idx = np.random.choice(range(len(self.img_list['hr'])))
+
             img = {}
             for res in ['lr', 'hr']:
                 img_path = os.path.join(self.folders[res], self.img_list[res][idx])
+                print('\nget batch path:', img_path)
                 img[res] = imageio.imread(img_path) / 255.0
             # batch = self._crop_imgs(img, batch_size, flatness)
-            # transforms = np.random.randint(0, 3, 2)
-            # batch['lr'] = self._transform_batch(img['lr'], transforms)
-            # batch['hr'] = self._transform_batch(img['hr'], transforms)
-            # result_batch['lr'].append(batch['lr'])
-            # result_batch['hr'].append(batch['hr'])
-            # idx = None
+            
             batch['lr'].append(img['lr'])
             batch['hr'].append(img['hr'])
-
+            
         transforms = np.random.randint(0, 3, (batch_size, 2))
-
-        result_batch['lr'] = self._transform_batch(batch['lr'], transforms)
-        result_batch['hr'] = self._transform_batch(batch['hr'], transforms)
-
+        result_batch['lr'] = self._transform_batch(np.array(batch['lr']), transforms)
+        result_batch['hr'] = self._transform_batch(np.array(batch['hr']), transforms)
+            
+        print('shape,', result_batch['lr'].shape)
         return result_batch
 
     def get_validation_batches(self, batch_size):
@@ -240,42 +241,61 @@ class DataHandler:
 
     # @shenghuiyu
     def _choose_from_sum(self, file_names, file_dir):
-        list1 = []
-        list2 = []
-        output = []
 
+        def save_lighter(images):
+            means = [np.mean(np.array(Image.open(file_dir+single_image))) for single_image in images]
+            lighter = images[means.index(max(means))]
+            print(lighter)
+            ans.append(lighter)
+
+        ans = []
+        images = []
+        last = file_names[0][:-5]
         for f in file_names:
-            if f[-5]=='1':
-                list1.append(f)
-            elif f[-5]=='2':
-                list2.append(f)
-
-
-        assert len(list1)==len(list2)
-
-
-        for i in range(len(list1)):
-            # print(list1[i], list2[i])
-            assert list1[i][:-5]==list2[i][:-5]
-
-            img1=Image.open(file_dir+list1[i])
-            img2=Image.open(file_dir+list2[i])
-            # array = np.array(img)
-            # print(len(array))
-
-            sum1=0
-            sum2=0
-            for w in range(img1.size[0]):
-                for h in range(img1.size[1]):
-                    sum1+=sum(img1.getpixel((w,h)))
-                    sum2+=sum(img2.getpixel((w,h)))
-
-            if sum1 > sum2:
-                output.append(list1[i])
-
+            if f[:-5] == last:
+                images.append(f)
             else:
-                output.append(list2[i])
+                save_lighter(images)
+                images, last = [f], f[:-5]
+    
+        save_lighter(images)
+        print(len(file_names), len(ans))
+        # assert len(file_names) == len(ans)
+        return ans
 
-            print("getting image summation:"+str(i)+"/"+str(len(list1)))
 
-        return output
+        # list1 = []
+        # list2 = []
+        # output = []
+
+        # for f in file_names:
+        #     if f[-5]=='1':
+        #         list1.append(f)
+        #     elif f[-5]=='2':
+        #         list2.append(f)
+
+
+        # assert len(list1)==len(list2)
+
+
+        # for i in range(len(list1)):
+        #     print(list1[i][:-5], list2[i][:-5])
+        #     assert list1[i][:-5]==list2[i][:-5]
+
+        #     img1=Image.open(file_dir+list1[i])
+        #     img2=Image.open(file_dir+list2[i])
+
+        #     sum1=0
+        #     sum2=0
+        #     for w in range(img1.size[0]):
+        #         for h in range(img1.size[1]):
+        #             sum1+=sum(img1.getpixel((w,h)))
+        #             sum2+=sum(img2.getpixel((w,h)))
+
+        #     if sum1 > sum2:
+        #         output.append(list1[i])
+        #         print(list1[i])
+        #     else:
+        #         output.append(list2[i])
+        #         print(list2[i])
+        # return output
